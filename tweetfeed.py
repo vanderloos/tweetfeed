@@ -4,7 +4,7 @@ import datetime
 import PyRSS2Gen
 
 def printRow(string):
-    '''Establish a row to be placed in the log file'''
+    '''Fixing encoding issues'''
     a = format(string)
 
     if hasattr(a, '__unicode__'): 
@@ -15,15 +15,11 @@ def printRow(string):
     a = a.encode('utf8', 'replace')
     return a
 
-twitter_statuses = open('twitter.txt','w')
-twitter_statuses.write('')
-twitter_statuses.close()
-twitter_statuses = open('twitter.txt','a')
 
-api = twitter.Api(consumer_key='CZGrrEjAklcPzpmDJoZQ',
-                      consumer_secret='ZjY0A2FKT5skzVURTJZAt6mLMPqRJIeU0FI3mL7X4E',
-                      access_token_key='77175560-9H3K6zE1IphHwRnEDLEHcSCnNslTxB5malHUpuVTA',
-                      access_token_secret='Du16HhrTzYxVojFtbsGYxpwRXLBxM62TdjsIvFOBpk')
+api = twitter.Api(consumer_key='XXXXXXXXX',
+                      consumer_secret='XXXXXXXXXXXX',
+                      access_token_key='XXXXXXXXXXXXXX',
+                      access_token_secret='XXXXXXXXXXXX')
 
 friends = api.GetFriends()
 rss = PyRSS2Gen.RSS2(
@@ -53,8 +49,6 @@ for tweet in statuses_sum:
 	item.author = printRow(tweet.user.name)
          
 	rss.items.append(item)	
-	twitter_statuses.write(printRow(tweet.user.name)+'\n')
-	twitter_statuses.write(printRow(tweet.text)+'\n')
 
 twitter_statuses.close()
 rss.write_xml(open("pyrss2gen.xml", "w"))
