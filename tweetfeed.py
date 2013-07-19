@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
-import twitter
 import datetime
+
+import twitter
 import PyRSS2Gen
 
 
@@ -51,8 +52,8 @@ class MyFeed:
             item = PyRSS2Gen.RSSItem(title=printRow(tweet.user.name + ': ' + tweet.text))
             tweet_url = r'https://twitter.com/' + tweet.user.screen_name + r'/status/' + str(tweet.id)
             if tweet.in_reply_to_status_id:
-                item.description = r'In reply to: https://twitter.com/' + tweet.in_reply_to_screen_name + r'/status/' + str(
-                    tweet.in_reply_to_status_id)
+                item.description = r'In reply to: https://twitter.com/' + tweet.in_reply_to_screen_name + r'/status/' + \
+                                   str(tweet.in_reply_to_status_id)
             if tweet.urls:
                 item.link = tweet.urls[0].expanded_url
 
