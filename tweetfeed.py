@@ -18,13 +18,26 @@ def printRow(string):
     return a
 
 
+class Config:
+	def __init__(self, config_file = 'config'):
+		self.config = open(config_file, 'r')
+		def conf_value(line):
+			return line.split('=')[1].strip()
+		for line in self.config:
+			value = conf_value(line)
+			if line.startswith('consumer_key'):
+				self.consumer_key = value
+			elif line.startswith('consumer_secret'):
+				self.consumer_secret = value
+			elif line.startswith('access_token_key'):
+				self.access_token_key = value
+			elif line.startswith('access_token_secret'):
+				self.access_token_secret = value
+
+
 class MyFeed:
-    def __init__(self, consumer_key='', consumer_secret='', access_token_key='77175560-', access_token_secret='',
-                 xml_out_file="pyrss2gen.xml"):
-        self.consumer_key = consumer_key
-        self.consumer_secret = consumer_secret
-        self.access_token_key = access_token_key
-        self.access_token_secret = access_token_secret
+    def __init__(self, xml_out_file="pyrss2gen.xml"):
+        self.config = Config()
         self.statuses_file = ""
         self.title = "Vanderloos PyRSS2Gen feed"
         self.link = "http://twitter.com/van_der_loos"
@@ -32,7 +45,7 @@ class MyFeed:
         self.xml_out_file = xml_out_file
 
     def get_feed(self):
-        api = twitter.Api(self.consumer_key, self.consumer_secret, self.access_token_key, self.access_token_secret)
+        api = twitter.Api(self.config.consumer_key, self.config.consumer_secret, self.config.access_token_key, self.config.access_token_secret)
 
         friends = api.GetFriends()
         rss = PyRSS2Gen.RSS2(self.title, self.link, self.description,
