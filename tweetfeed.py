@@ -19,20 +19,22 @@ def printRow(string):
 
 
 class Config:
-	def __init__(self, config_file = 'config'):
-		self.config = open(config_file, 'r')
-		def conf_value(line):
-			return line.split('=')[1].strip()
-		for line in self.config:
-			value = conf_value(line)
-			if line.startswith('consumer_key'):
-				self.consumer_key = value
-			elif line.startswith('consumer_secret'):
-				self.consumer_secret = value
-			elif line.startswith('access_token_key'):
-				self.access_token_key = value
-			elif line.startswith('access_token_secret'):
-				self.access_token_secret = value
+    def __init__(self, config_file='config'):
+        self.config = open(config_file, 'r')
+
+        def conf_value(line):
+            return line.split('=')[1].strip()
+
+        for line in self.config:
+            value = conf_value(line)
+            if line.startswith('consumer_key'):
+                self.consumer_key = value
+            elif line.startswith('consumer_secret'):
+                self.consumer_secret = value
+            elif line.startswith('access_token_key'):
+                self.access_token_key = value
+            elif line.startswith('access_token_secret'):
+                self.access_token_secret = value
 
 
 class MyFeed:
@@ -45,7 +47,8 @@ class MyFeed:
         self.xml_out_file = xml_out_file
 
     def get_feed(self):
-        api = twitter.Api(self.config.consumer_key, self.config.consumer_secret, self.config.access_token_key, self.config.access_token_secret)
+        api = twitter.Api(self.config.consumer_key, self.config.consumer_secret, self.config.access_token_key,
+                          self.config.access_token_secret)
 
         friends = api.GetFriends()
         rss = PyRSS2Gen.RSS2(self.title, self.link, self.description,
@@ -61,7 +64,7 @@ class MyFeed:
             statuses_sum += api.GetUserTimeline(user_id=friend.id, since_id=357931428379500544)
         statuses_sum.sort(key=lambda tweet: tweet.created_at_in_seconds, reverse=True)
 
-        for tweet in statuses_sum:
+        for tweet in statuses_sum[:100]:
             item = PyRSS2Gen.RSSItem(title=printRow(tweet.user.name + ': ' + tweet.text))
             tweet_url = r'https://twitter.com/' + tweet.user.screen_name + r'/status/' + str(tweet.id)
             if tweet.in_reply_to_status_id:
