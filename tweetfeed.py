@@ -1,19 +1,14 @@
 # -*- coding: utf-8 -*-
 import datetime
 
-import twitter
+from twitter import *
 import PyRSS2Gen
 
 
 def printRow(string):
     '''Fixing encoding issues'''
-    a = format(string)
+    a = str(string)
 
-    if hasattr(a, '__unicode__'):
-        a = unicode(a)
-
-    if not isinstance(a, unicode):
-        a = a.decode('utf8', 'replace')
     a = a.encode('utf8', 'replace')
     return a
 
@@ -47,10 +42,9 @@ class MyFeed:
         self.xml_out_file = xml_out_file
 
     def get_feed(self):
-        api = twitter.Api(self.config.consumer_key, self.config.consumer_secret, self.config.access_token_key,
-                          self.config.access_token_secret)
+        api = Twitter(auth=OAuth(self.config.access_token_key,
+                          self.config.access_token_secret, self.config.consumer_key, self.config.consumer_secret))
 
-        friends = api.GetFriends()
         rss = PyRSS2Gen.RSS2(self.title, self.link, self.description,
                              lastBuildDate=datetime.datetime.now(), items=[])
         if self.statuses_file:
@@ -58,35 +52,32 @@ class MyFeed:
             twitter_statuses.write('')
             twitter_statuses.close()
             twitter_statuses = open(self.statuses_file, 'a')
-        statuses_sum = []
+        statuses_sum = api.statuses.home_timeline(count=20)
 
-        for friend in friends:
-            statuses_sum += api.GetUserTimeline(user_id=friend.id, since_id=357931428379500544)
-        statuses_sum.sort(key=lambda tweet: tweet.created_at_in_seconds, reverse=True)
+        statuses_sum.sort(key=lambda tweet: tweet['created_at'], reverse=True)
 
-        for tweet in statuses_sum[:100]:
-            item = PyRSS2Gen.RSSItem(title=printRow(tweet.user.name + ': ' + tweet.text))
-            tweet_url = r'https://twitter.com/' + tweet.user.screen_name + r'/status/' + str(tweet.id)
-            if tweet.in_reply_to_status_id:
-                item.description = r'In reply to: https://twitter.com/' + tweet.in_reply_to_screen_name + r'/status/' + \
-                                   str(tweet.in_reply_to_status_id)
-            if tweet.urls:
-                item.link = tweet.urls[0].expanded_url
+        for tweet in statuses_sum:
+            item = PyRSS2Gen.RSSItem(title=printRow(tweet['user']['name'] + ': ' + tweet['text']))
+            tweet_url = printRow(r'https://twitter.com/' + tweet['user']['screen_name'] + r'/status/' + tweet['id_str'])
+            if tweet['in_reply_to_status_id']:
+                item.description = str(r'In reply to: https://twitter.com/' + tweet['in_reply_to_screen_name'] + r'/status/' + tweet['in_reply_to_status_id_str'])
+            if tweet['entities']['urls']:
+                item.link = tweet['entities']['urls'][0]['expanded_url']
 
             item.guid = PyRSS2Gen.Guid(tweet_url)
-            item.pubDate = tweet.created_at
-            item.author = printRow(tweet.user.name)
+            item.pubDate = tweet['created_at']
+            item.author = printRow(tweet['user']['name'])
 
             rss.items.append(item)
-            if self.statuses_file:
-                twitter_statuses.write(printRow(tweet.user.name) + '\n')
-                twitter_statuses.write(printRow(tweet.text) + '\n')
-
+            '''if self.statuses_file:
+                twitter_statuses.write(printRow(tweet['user']['name']) + '\n')
+                twitter_statuses.write(printRow(tweet['text']) + '\n')
+			'''
         rss.write_xml(open(self.xml_out_file, "w"))
         if self.statuses_file:
             twitter_statuses.close()
 
 
-def get_feed():
+def feed():
     a = MyFeed()
     a.get_feed()
