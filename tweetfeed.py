@@ -5,13 +5,6 @@ from twitter import *
 import PyRSS2Gen
 
 
-def printRow(string):
-    '''Fixing encoding issues'''
-    a = str(string)
-
-    a = a.encode('utf8', 'replace')
-    return a
-
 
 class Config:
     def __init__(self, config_file='config'):
@@ -57,8 +50,8 @@ class MyFeed:
         statuses_sum.sort(key=lambda tweet: tweet['created_at'], reverse=True)
 
         for tweet in statuses_sum:
-            item = PyRSS2Gen.RSSItem(title=printRow(tweet['user']['name'] + ': ' + tweet['text']))
-            tweet_url = printRow(r'https://twitter.com/' + tweet['user']['screen_name'] + r'/status/' + tweet['id_str'])
+            item = PyRSS2Gen.RSSItem(title=tweet['user']['name'] + ': ' + tweet['text'])
+            tweet_url = r'https://twitter.com/' + tweet['user']['screen_name'] + r'/status/' + tweet['id_str']
             if tweet['in_reply_to_status_id']:
                 item.description = str(r'In reply to: https://twitter.com/' + tweet['in_reply_to_screen_name'] + r'/status/' + tweet['in_reply_to_status_id_str'])
             if tweet['entities']['urls']:
@@ -66,12 +59,12 @@ class MyFeed:
 
             item.guid = PyRSS2Gen.Guid(tweet_url)
             item.pubDate = tweet['created_at']
-            item.author = printRow(tweet['user']['name'])
+            item.author = tweet['user']['name']
 
             rss.items.append(item)
             '''if self.statuses_file:
-                twitter_statuses.write(printRow(tweet['user']['name']) + '\n')
-                twitter_statuses.write(printRow(tweet['text']) + '\n')
+                twitter_statuses.write(tweet['user']['name']) + '\n'
+                twitter_statuses.write(tweet['text']) + '\n'
 			'''
         rss.write_xml(open(self.xml_out_file, "w"))
         if self.statuses_file:
