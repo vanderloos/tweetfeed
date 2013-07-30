@@ -34,7 +34,7 @@ class MyFeed:
         self.description = "The latest tweets from vanderloos' friends"
         self.xml_out_file = xml_out_file
 
-    def get_feed(self):
+    def get_feed(self,num=200):
         api = Twitter(auth=OAuth(self.config.access_token_key,
                           self.config.access_token_secret, self.config.consumer_key, self.config.consumer_secret))
 
@@ -45,9 +45,9 @@ class MyFeed:
             twitter_statuses.write('')
             twitter_statuses.close()
             twitter_statuses = open(self.statuses_file, 'a')
-        statuses_sum = api.statuses.home_timeline(count=20)
+        statuses_sum = api.statuses.home_timeline(count=num)
 
-        statuses_sum.sort(key=lambda tweet: tweet['created_at'], reverse=True)
+        statuses_sum.sort(key=lambda tweet: tweet['created_at'], reverse=False)
 
         for tweet in statuses_sum:
             item = PyRSS2Gen.RSSItem(title=tweet['user']['name'] + ': ' + tweet['text'])
@@ -66,7 +66,7 @@ class MyFeed:
                 twitter_statuses.write(tweet['user']['name']) + '\n'
                 twitter_statuses.write(tweet['text']) + '\n'
 			'''
-        rss.write_xml(open(self.xml_out_file, "w"))
+        rss.write_xml(open(self.xml_out_file, "w"), encoding = 'utf-8')
         if self.statuses_file:
             twitter_statuses.close()
 
@@ -74,3 +74,4 @@ class MyFeed:
 def feed():
     a = MyFeed()
     a.get_feed()
+    return 'Success'
