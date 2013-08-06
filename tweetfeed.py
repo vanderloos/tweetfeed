@@ -7,8 +7,8 @@ import PyRSS2Gen
 
 
 class Config:
-    def __init__(self, config_file='config'):
-        self.config = open(config_file, 'r')
+    def __init__(self, config_path):
+        self.config = open(config_path,'r')
 
         def conf_value(line):
             return line.split('=')[1].strip()
@@ -23,18 +23,20 @@ class Config:
                 self.access_token_key = value
             elif line.startswith('access_token_secret'):
                 self.access_token_secret = value
+            elif line.startswith('user_id'):
+                self.user_id = value
 
 
 class MyFeed:
-    def __init__(self, xml_out_file="pyrss2gen.xml"):
-        self.config = Config()
+    def __init__(self, config_path="config", xml_out_file="pyrss2gen.xml"):
+        self.config = Config(config_path)
         self.statuses_file = ""
         self.title = "Vanderloos PyRSS2Gen feed"
         self.link = "http://twitter.com/van_der_loos"
         self.description = "The latest tweets from vanderloos' friends"
         self.xml_out_file = xml_out_file
 
-    def get_feed(self,num=200):
+    def get_feed(self,num=50):
         api = Twitter(auth=OAuth(self.config.access_token_key,
                           self.config.access_token_secret, self.config.consumer_key, self.config.consumer_secret))
 
@@ -53,7 +55,8 @@ class MyFeed:
             item = PyRSS2Gen.RSSItem(title=tweet['user']['name'] + ': ' + tweet['text'])
             tweet_url = r'https://twitter.com/' + tweet['user']['screen_name'] + r'/status/' + tweet['id_str']
             if tweet['in_reply_to_status_id']:
-                item.description = str(r'In reply to: https://twitter.com/' + tweet['in_reply_to_screen_name'] + r'/status/' + tweet['in_reply_to_status_id_str'])
+                item.description = str(r'In reply to: <a href=https://twitter.com/' + tweet['in_reply_to_screen_name'] + r'/status/' + tweet['in_reply_to_status_id_str'] + '>' + tweet['in_reply_to_screen_name'] + '</a>')
+            else: item.description = tweet_url
             if tweet['entities']['urls']:
                 item.link = tweet['entities']['urls'][0]['expanded_url']
 
@@ -71,7 +74,7 @@ class MyFeed:
             twitter_statuses.close()
 
 
-def feed():
-    a = MyFeed()
+def feed(config, out):
+    a = MyFeed(config_path=config, xml_out_file=out)
     a.get_feed()
     return 'Success'
