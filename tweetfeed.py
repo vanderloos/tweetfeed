@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 import datetime
 
 from twitter import *
@@ -52,11 +52,15 @@ class MyFeed:
         statuses_sum.sort(key=lambda tweet: tweet['created_at'], reverse=False)
 
         for tweet in statuses_sum:
-            item = PyRSS2Gen.RSSItem(title=tweet['user']['name'] + ': ' + tweet['text'])
+            tweet_text = tweet['text'].replace('і','i').replace('є','je').replace('ї','ji').replace('Є','je').replace('Ї','ji').replace('І','I')
+            item = PyRSS2Gen.RSSItem(title='@' + tweet['user']['screen_name'] + ': ' + tweet_text)
             tweet_url = r'https://twitter.com/' + tweet['user']['screen_name'] + r'/status/' + tweet['id_str']
             if tweet['in_reply_to_status_id']:
-                item.description = str(r'In reply to: <a href=https://twitter.com/' + tweet['in_reply_to_screen_name'] + r'/status/' + tweet['in_reply_to_status_id_str'] + '>' + tweet['in_reply_to_screen_name'] + '</a>')
-            else: item.description = tweet_url
+                tweet_replied = api.statuses.show(id = tweet['in_reply_to_status_id'])
+                text_replied = tweet_replied['text']
+                item.description = str(r'In reply to: <a href=https://twitter.com/' + tweet['in_reply_to_screen_name'] + r'/status/' +
+                    tweet['in_reply_to_status_id_str'] + '>' + tweet['in_reply_to_screen_name'] + '</a>: ' + text_replied) + ' <br>The original text: ' + tweet_text
+            else: item.description = r'<a href=' + tweet_url + '>tweet link</a><br> ' + tweet_text
             if tweet['entities']['urls']:
                 item.link = tweet['entities']['urls'][0]['expanded_url']
 
